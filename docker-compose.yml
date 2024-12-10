@@ -1,0 +1,15 @@
+version: '3'
+services:
+  scala-dev:
+    container_name: scala
+    build: .
+    ports:
+      - "5900:5900"
+      - "8080:8080"
+    volumes:
+      - ./:/app
+    environment:
+      - DISPLAY=:0
+    stdin_open: true  # Para mantener STDIN abierto
+    tty: true        # Para tener una pseudo-TTY
+    command: /bin/bash  # Para darte una shell en lugar de ejecutar la aplicación
