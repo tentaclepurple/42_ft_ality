@@ -1,32 +1,10 @@
 import scala.swing._
 import scala.swing.event._
 import java.awt.Color
-import grammar.{Parser, Grammar}
+import grammar.Parser
 
 
-object Main {
-  def main(args: Array[String]): Unit = {
-    if (args.length < 1) {
-      println("Usage: program <grammar-file>")
-      sys.exit(1)
-    }
-
-    // Cargar la gramática
-    val grammar: Grammar = Parser.parseFile(args(0)) match {
-      case Right(g) => 
-        println(s"Loaded ${g.mappings.length} key mappings and ${g.combos.length} combos")
-        g
-      case Left(error) => 
-        println(s"Error: $error")
-        sys.exit(1)
-    }
-
-    // Iniciar la aplicación swing
-    new MainApp(grammar).main(args)
-  }
-}
-
-object MainApp extends SimpleSwingApplication {
+object Main extends SimpleSwingApplication {
   def top = new MainFrame {
     title = "Test Keyboard Events"
     
