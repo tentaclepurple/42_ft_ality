@@ -30,10 +30,10 @@ RUN echo '#!/bin/bash' > /start-vnc.sh && \
     echo 'Xvfb :0 -screen 0 1024x768x16 &' >> /start-vnc.sh && \
     echo 'sleep 1' >> /start-vnc.sh && \
     echo 'fluxbox 2>/dev/null &' >> /start-vnc.sh && \
-    echo 'x11vnc -display :0 -forever -nopw -xdamage &' >> /start-vnc.sh && \
+    echo 'x11vnc -display :0 -forever -nopw -xdamage -port 5900 &' >> /start-vnc.sh && \
     echo 'cd /opt/noVNC' >> /start-vnc.sh && \
     echo './utils/novnc_proxy --vnc localhost:5900 --listen 8080 &' >> /start-vnc.sh && \
-    echo 'echo "Entorno gráfico iniciado. Accede a http://localhost:8080"' >> /start-vnc.sh && \
+    echo 'echo "Entorno gráfico iniciado. Accede a http://localhost:8080/vnc.html"' >> /start-vnc.sh && \
     chmod +x /start-vnc.sh
 
 WORKDIR /app

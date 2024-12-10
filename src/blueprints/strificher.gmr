@@ -1,0 +1,19 @@
+# Key mappings
+
+'6' -> [R] (Right) 
+'4' -> [L] (Left) 
+'8' -> [J] (Jump) 
+'9' -> [JR] (Jump right) 
+'7' -> [JL] (Jump left)
+'2' -> [S] (Squat)
+'q' -> [P] (Punch) 
+'a' -> [K] (Kick) 
+
+# Combos
+
+Right, Right, Punch -> "RUNNING PUNCH"
+Left, Squat, Right, Punch -> "HADOUUUUKEN"
+Left, Squat, Right, Kick -> "OSOTO MAWASHIGERI"
+Right, Squat, Left, Kick -> "TATSUMAKI"
+Left, Squat, Right, Punch -> "SHORYU"
+Left, Squat, Right, Left, Squat, Right, Punch -> "SHORYUREPPA"

@@ -4,12 +4,12 @@ services:
     container_name: scala
     build: .
     ports:
-      - "5900:5900"
-      - "8080:8080"
+      - "8900:5900"  # VNC port (host:container)
+      - "8080:8080"  # noVNC web port
     volumes:
       - ./:/app
     environment:
       - DISPLAY=:0
-    stdin_open: true  # Para mantener STDIN abierto
-    tty: true        # Para tener una pseudo-TTY
-    command: /bin/bash  # Para darte una shell en lugar de ejecutar la aplicación
+    stdin_open: true
+    tty: true
+    command: /bin/bash
