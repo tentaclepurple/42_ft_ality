@@ -1,3 +1,5 @@
+//src/MainApp.scala
+
 import scala.swing._
 import scala.swing.event._
 import java.awt.Color

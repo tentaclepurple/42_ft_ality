@@ -1,3 +1,5 @@
+//src/Main.scala
+
 import grammar.{Parser, Printer}
 import automaton.AutomatonBuilder
 

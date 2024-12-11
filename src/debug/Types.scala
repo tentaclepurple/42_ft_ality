@@ -1,3 +1,6 @@
+// src/debug/Types.scala
+
+
 package debug
 
 case class DebugState(isEnabled: Boolean)

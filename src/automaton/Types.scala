@@ -1,3 +1,5 @@
+//src/automaton/Types.scala
+
 package automaton
 
 import debug.{DebugState, Logger, DebugMessage, StateTransition, AvailableMoves, TimeoutReset}
@@ -37,9 +39,11 @@ case class Automaton(
       } else {
         currentState.transitions.get(input) match {
           case Some(nextState) =>
-            Logger.log(debugState, StateTransition(currentState.id, input, nextState.id))
+            //Logger.log(debugState, StateTransition(currentState.id, input, nextState.id))
+            println(s"SOME: ${currentState.id} --($input)--> ${nextState.id}")
           case None =>
-            Logger.log(debugState, StateTransition(currentState.id, input, initialState.id))
+            //Logger.log(debugState, StateTransition(currentState.id, input, initialState.id))
+            println(s"NONE: ${currentState.id} --($input)--> ${initialState.id}")
         }
       }
     }
