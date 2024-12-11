@@ -28,10 +28,6 @@ case class Automaton(
   debugState: DebugState = DebugState(false)
 ) {
   def transition(input: String, currentTime: Long): (Automaton, Option[String]) = {
-    println(s"\n=== TRANSICIÓN CON INPUT: $input ===")
-    println(s"Estado actual: ${currentState.id}")
-    println(s"Transiciones disponibles en mapa de estados: ${states(currentState.id).transitions.map { case (k,v) => s"$k->Estado${v.id}" }.mkString(", ")}")
-    println(s"Transiciones disponibles en estado actual: ${currentState.transitions.map { case (k,v) => s"$k->Estado${v.id}" }.mkString(", ")}")
 
     // Si estamos en un estado final o la transición actual no es válida,
     // intentamos empezar un nuevo combo desde el estado inicial
@@ -39,13 +35,12 @@ case class Automaton(
       // Verificar si podemos empezar un nuevo combo con esta entrada
       states(0).transitions.get(input) match {
         case Some(nextState) =>
-          println(s"**starting new combo: Estado 0 --($input)--> Estado ${nextState.id}")
+          Logger.log(debugState, StateTransition(states(0).id, input, nextState.id))
           (this.copy(
             currentState = states(nextState.id),
             history = List(Transition(states(0), input, currentTime))
           ), None)
         case None =>
-          println(s"**invalid input: permaneciendo en estado inicial")
           (this.copy(
             currentState = states(0),
             history = List()
@@ -55,11 +50,11 @@ case class Automaton(
       // Continuamos el combo actual
       currentState.transitions.get(input) match {
         case Some(nextState) =>
-          println(s"**continuing combo: Estado ${currentState.id} --($input)--> Estado ${nextState.id}")
+          Logger.log(debugState, StateTransition(currentState.id, input, nextState.id))
           val newState = states(nextState.id)
           val message = if (newState.isFinal) {
-            println(s"**combo completed: ${newState.possibleMoves.mkString(", ")}")
-            Some(s"¡COMBO! ${newState.possibleMoves.mkString(", ")}")
+            Logger.log(debugState, AvailableMoves(newState.possibleMoves))
+            Some(s"COMBO! ${newState.possibleMoves.mkString(", ")}")
           } else None
           
           (this.copy(
@@ -67,7 +62,6 @@ case class Automaton(
             history = Transition(currentState, input, currentTime) :: history
           ), message)
         case None =>
-          println(s"**invalid transition: volviendo a estado inicial")
           (this.copy(
             currentState = states(0),
             history = List()

@@ -8,9 +8,9 @@ object Logger {
     if (state.isEnabled) {
       message match {
         case StateTransition(from, input, to) =>
-          println(s"Estado $from --($input)--> Estado $to")
+          println(s"State $from --($input)--> State $to")
         case AvailableMoves(moves) if moves.nonEmpty =>
-          println(s"¡COMBO COMPLETADO! ${moves.mkString(", ")}")
+          println(s"\nCOMBO! ${moves.mkString(", ")}!!!!\n")
         case AvailableMoves(_) => // Caso para conjunto vacío
         case TimeoutReset(_) =>
           println(s"¡TIMEOUT! Volviendo al estado inicial")
