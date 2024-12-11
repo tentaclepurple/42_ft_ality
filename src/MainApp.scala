@@ -66,44 +66,36 @@ class MainApp(grammar: Grammar, initialAutomaton: Automaton) extends SimpleSwing
     listenTo(mainPanel.keys)
     
     reactions += {
-      case KeyTyped(_, c, mod, _) =>
-        if (c == '?') {
-          automaton = if (automaton.debugState.isEnabled) {
-            automaton.disableDebug
-          } else {
-            automaton.enableDebug
+  case KeyTyped(_, c, mod, _) =>
+    if (c == '?') {
+      automaton = if (automaton.debugState.isEnabled) {
+        println("\nDebug mode OFF")
+        automaton.disableDebug
+      } else {
+        println("\nDebug mode ON")
+        automaton.enableDebug
+      }
+    } else {
+      val keyStr = c.toString
+      keyToAction.get(keyStr) match {
+        case Some(action) =>
+          val text = s"Tecla: $keyStr -> Acción: $action"
+          keyLabel.text = text
+          historyArea.text = text + "\n" + historyArea.text
+          historyArea.peer.setCaretPosition(0)
+          
+          automaton = automaton.transition(action, System.currentTimeMillis())._1
+          
+          val moves = automaton.getCurrentMoves
+          if (moves.nonEmpty) {
+            comboArea.text = s"¡COMBO! ${moves.mkString(", ")}\n" + comboArea.text
+            comboArea.peer.setCaretPosition(0)
           }
-          keyLabel.text = s"Debug mode: ${if (automaton.debugState.isEnabled) "ON" else "OFF"}"
-        } else {
-          val keyStr = c.toString
-          keyToAction.get(keyStr) match {
-            case Some(action) =>
-              val text = s"Tecla: $keyStr -> Acción: $action"
-              keyLabel.text = text
-              
-              // Procesar la acción en el autómata
-              val (newAutomaton, debugMsg) = automaton.transition(action, System.currentTimeMillis())
-              automaton = newAutomaton
-              
-              // Actualizar historial con mensaje de debug si existe
-              val historyText = debugMsg match {
-                case Some(msg) => s"$text\n$msg"
-                case None => text
-              }
-              historyArea.text = historyText + "\n" + historyArea.text
-              historyArea.peer.setCaretPosition(0)
-              
-              // Verificar si hay algún combo completado
-              val moves = automaton.getCurrentMoves
-              if (moves.nonEmpty) {
-                comboArea.text = s"¡COMBO! ${moves.mkString(", ")}\n" + comboArea.text
-                comboArea.peer.setCaretPosition(0)
-              }
 
-            case None =>
-              keyLabel.text = s"Tecla no mapeada: $keyStr"
-          }
-        }
+        case None =>
+          keyLabel.text = s"Tecla no mapeada: $keyStr"
+      }
+    }
     }
   }
 }

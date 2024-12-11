@@ -26,44 +26,51 @@ case class Automaton(
   debugState: DebugState = DebugState(false)
 ) {
   def transition(input: String, currentTime: Long): (Automaton, Option[String]) = {
-    val shouldReset = history.headOption.exists(t => 
+    /* val shouldReset = history.headOption.exists(t => 
       currentTime - t.timestamp > timeoutMillis
-    )
+    ) */
+    val shouldReset = false
 
-    val debugMessage = if (debugState.isEnabled) {
+    if (debugState.isEnabled) {
       if (shouldReset) {
-        Some(Logger.formatMessage(TimeoutReset(input)))
+        Logger.log(debugState, TimeoutReset(input))
       } else {
         currentState.transitions.get(input) match {
           case Some(nextState) =>
-            Some(Logger.formatMessage(StateTransition(currentState.id, input, nextState.id)))
+            Logger.log(debugState, StateTransition(currentState.id, input, nextState.id))
           case None =>
-            Some(Logger.formatMessage(StateTransition(currentState.id, input, initialState.id)))
+            Logger.log(debugState, StateTransition(currentState.id, input, initialState.id))
         }
       }
-    } else None
+    }
 
     val newAutomaton = if (shouldReset) {
+      // Reset por timeout - volver al estado inicial y empezar un nuevo combo
+      val nextState = initialState.transitions.get(input).getOrElse(initialState)
       this.copy(
-        currentState = initialState,
+        currentState = nextState,
         history = List(Transition(initialState, input, currentTime))
       )
     } else {
+      // Transición normal
       currentState.transitions.get(input) match {
         case Some(nextState) =>
+          // Transición válida - continuar el combo
           this.copy(
             currentState = nextState,
             history = Transition(currentState, input, currentTime) :: history
           )
-        case None => 
+        case None =>
+          // Transición inválida - ver si podemos empezar un nuevo combo desde el estado inicial
+          val nextState = initialState.transitions.get(input).getOrElse(initialState)
           this.copy(
-            currentState = initialState,
+            currentState = nextState,
             history = List(Transition(initialState, input, currentTime))
           )
       }
     }
 
-    (newAutomaton, debugMessage)
+    (newAutomaton, None)
   }
 
   def getCurrentMoves: Set[String] = currentState.possibleMoves
