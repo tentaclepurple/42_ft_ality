@@ -27,7 +27,7 @@ RUN git clone https://github.com/novnc/noVNC.git /opt/noVNC && \
 # Crear script para iniciar el entorno gráfico
 RUN echo '#!/bin/bash' > /start-vnc.sh && \
     echo 'export DISPLAY=:0' >> /start-vnc.sh && \
-    echo 'Xvfb :0 -screen 0 1024x768x16 &' >> /start-vnc.sh && \
+    echo 'Xvfb :0 -screen 0 1920x720x16 &' >> /start-vnc.sh && \
     echo 'sleep 1' >> /start-vnc.sh && \
     echo 'fluxbox 2>/dev/null &' >> /start-vnc.sh && \
     echo 'x11vnc -display :0 -forever -nopw -xdamage -port 5900 &' >> /start-vnc.sh && \

@@ -27,11 +27,11 @@ clean: down
 	yes | docker system prune -a
 
 # Scala dirs
-TARGET_DIR = target
+TARGET_DIR = target/classes
 SRC_DIR = src
 
-SCALA_FILES = $(wildcard $(SRC_DIR)/*.scala)
-CLASS_FILES = $(SCALA_FILES:$(SRC_DIR)/%.scala=$(TARGET_DIR)/%.class)
+# Encontrar archivos fuente de manera más segura
+SCALA_FILES = $(shell find $(SRC_DIR) -name "*.scala" -type f | tr '\n' ' ')
 
 # Classpath
 SCALA_SWING = /usr/share/scala-swing.jar
@@ -43,21 +43,28 @@ SCALAC = scalac
 SCALA = scala
 
 # Scala rules
-.PHONY: build run setup
+.PHONY: build run setup cleanscala
 
-build: setup $(CLASS_FILES)
+build: setup
+	@echo "Compiling: $(SCALA_FILES)"
+	@$(SCALAC) -d $(TARGET_DIR) -encoding UTF-8 -classpath $(SCALA_SWING) $(SCALA_FILES)
 
 setup:
-	@mkdir -p $(TARGET_DIR) $(SRC_DIR)
-	@if [ ! -f $(SRC_DIR)/$(MAIN_CLASS).scala ]; then \
-		mv -f *.scala $(SRC_DIR)/ 2>/dev/null || true; \
-	fi
-
-$(TARGET_DIR)/%.class: $(SRC_DIR)/%.scala
-	$(SCALAC) -d $(TARGET_DIR) -classpath $(CLASSPATH) $(SCALA_FILES)
+	@mkdir -p $(TARGET_DIR)
+	@mkdir -p $(SRC_DIR)/grammar
+	@mkdir -p $(SRC_DIR)/automaton
+	@mkdir -p $(SRC_DIR)/game
 
 run: build
-	$(SCALA) -classpath $(CLASSPATH) $(MAIN_CLASS)
+	$(SCALA) -classpath $(CLASSPATH) $(MAIN_CLASS) blueprints/estrificher.gmr
+
+#run: build
+#	$(SCALA) -classpath $(CLASSPATH) $(MAIN_CLASS) $(ARGS)
+
 
 cleanscala:
 	rm -rf $(TARGET_DIR)
+
+# scalac -d target/classes -classpath /usr/share/scala-swing.jar src/grammar/Parser.scala src/grammar/Types.scala src/MainApp.scala src/Main.scala
+
+# scala -classpath target/classes:/usr/share/scala-swing.jar Main blueprints/strificher.gmr
