@@ -4,7 +4,7 @@ package automaton
 
 import debug.{DebugState, Logger, DebugMessage, StateTransition, AvailableMoves, TimeoutReset}
 
-// Definimos los tipos básicos primero
+// First the types that define the automaton
 case class State(
   id: Int,
   transitions: Map[String, State],
@@ -18,7 +18,7 @@ case class Transition(
   timestamp: Long
 )
 
-// Luego el Autómata que usa estos tipos
+// Then the types that define the automaton's state
 case class Automaton(
   states: Map[Int, State],
   initialState: State,
@@ -29,10 +29,9 @@ case class Automaton(
 ) {
   def transition(input: String, currentTime: Long): (Automaton, Option[String]) = {
 
-    // Si estamos en un estado final o la transición actual no es válida,
-    // intentamos empezar un nuevo combo desde el estado inicial
+    // If the input is a timeout, reset the automaton we try to start a new combo
     if (currentState.isFinal || !currentState.transitions.contains(input)) {
-      // Verificar si podemos empezar un nuevo combo con esta entrada
+      // Check if the last move was a timeout
       states(0).transitions.get(input) match {
         case Some(nextState) =>
           Logger.log(debugState, StateTransition(states(0).id, input, nextState.id))
@@ -47,7 +46,7 @@ case class Automaton(
           ), None)
       }
     } else {
-      // Continuamos el combo actual
+      // Continue the combo
       currentState.transitions.get(input) match {
         case Some(nextState) =>
           Logger.log(debugState, StateTransition(currentState.id, input, nextState.id))

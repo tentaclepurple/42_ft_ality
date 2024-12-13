@@ -7,18 +7,17 @@ import grammar.{Grammar, Combo}
 
 object AutomatonBuilder {
   def fromGrammar(grammar: Grammar): Automaton = {
-    // Estado inicial
+    // initial state is always 0
     val initialState = State(0, Map(), isFinal = false, Set())
 
-    // Para cada combo, construimos un camino reutilizando estados
+    // For each combo, build the path
     val finalStates = grammar.combos.foldLeft(Map[Int, State](0 -> initialState)) {
       case (states, combo) =>
-        //println(s"\nProcesando combo: ${combo.sequence.mkString(" -> ")} = ${combo.moveName}")
 
-        // Construir el camino, reutilizando estados si es posible
+        // Build the path for the current combo
         val statesWithUpdatedPath = buildPath(states, 0, combo)
 
-        // Devolver el mapa actualizado de estados
+        // Return the updated states
         statesWithUpdatedPath
     }
 
@@ -33,7 +32,7 @@ object AutomatonBuilder {
   private def buildPath(states: Map[Int, State], startId: Int, combo: Combo): Map[Int, State] = {
     val sequence = combo.sequence
 
-    // Iterar sobre la secuencia y construir estados y transiciones
+    // Iterate over the sequence of moves to build the path
     val (updatedStates, lastStateId) = sequence.foldLeft((states, startId)) {
       case ((currentStates, currentId), move) =>
         val currentState = currentStates(currentId)
@@ -42,7 +41,7 @@ object AutomatonBuilder {
             (currentStates, existingState.id)
 
           case None =>
-            // Crear un nuevo estado
+            // Create a new state and add it to the current state transitions
             val newStateId = findNextId(currentStates)
             val newState = State(newStateId, Map(), isFinal = false, Set())
             val updatedCurrentState = currentState.copy(
@@ -55,8 +54,7 @@ object AutomatonBuilder {
         }
     }
 
-    //println(s"Finalizando camino en estado $lastStateId")
-    // Marcar el último estado como final
+    // Mark the last state as final
     val finalState = updatedStates(lastStateId).copy(isFinal = true, possibleMoves = Set(combo.moveName))
     updatedStates + (lastStateId -> finalState)
   }

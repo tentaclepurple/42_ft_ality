@@ -4,14 +4,14 @@
 'a' -> ⬅️ 
 'w' -> ⬆️
 's' -> ⬇️
-'p' -> 👊
-'o' -> 🦶 
+'p' -> Punch
+'o' -> Kick 
 
 # Combos
 
-➡️, ➡️, 👊 -> "RUNNING PUNCH"
-⬅️, ⬇️, ➡️, 👊 -> "HADOUUUUKEN"
-⬅️, ⬇️, ➡️, 🦶 -> "OSOTO MAWASHIGERI"
-➡️, ⬇️, ➡️, 🦶 -> "TATSUMAKI"
-➡️, ⬇️, ⬅️, 👊, 🦶 -> "SHORYU"
-⬅️, ⬇️, ➡️, ⬅️, ⬇️, ➡️, 👊 -> "SHORYUREPPA"
+➡️, ➡️, Punch -> "RUNNING PUNCH"
+⬅️, ⬇️, ➡️, Punch -> "HADOUUUUKEN"
+⬅️, ⬇️, ➡️, Kick -> "OSOTO MAWASHIGERI"
+➡️, ⬇️, ➡️, Kick -> "TATSUMAKI"
+➡️, ⬇️, ⬅️, Punch, Kick -> "SHORYU"
+⬅️, ⬇️, ➡️, ⬅️, ⬇️, ➡️, Punch -> "SHORYUREPPA"
