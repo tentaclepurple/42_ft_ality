@@ -1,4 +1,4 @@
-//src/MainApp.scala
+// src/MainApp.scala
 
 import scala.swing._
 import scala.swing.event._
@@ -129,7 +129,13 @@ class MainApp(grammar: Grammar, initialAutomaton: Automaton) extends SimpleSwing
       val comboMessage = comboMsg.map { msg =>
         val comboName = msg.split("!")(1).trim
         val imagePath = comboImages.get(comboName)
-        Message(msg, true, currentTime, 3000, imagePath)
+        // Keep the combo message if it's still active
+        state.comboMessage match {
+          case Some(existing) if currentTime - existing.timestamp < existing.duration =>
+            existing
+          case _ =>
+            Message(msg, true, currentTime, 3000, imagePath)
+        }
       }
       state.copy(
         automaton = newAutomaton,
@@ -138,12 +144,25 @@ class MainApp(grammar: Grammar, initialAutomaton: Automaton) extends SimpleSwing
       )
       
     case ShowCombo(combo, time, image) =>
-      state.copy(comboMessage = Some(Message(combo, true, time, 3000, image)))
+      val currentTime = System.currentTimeMillis()
+      // Only show the combo message if it's not already displayed
+      state.comboMessage match {
+        case Some(existing) if currentTime - existing.timestamp < existing.duration =>
+          state
+        case _ =>
+          state.copy(comboMessage = Some(Message(combo, true, time, 3000, image)))
+      }
       
-    case HideMessage(msgType, _) =>
+    case HideMessage(msgType, time) =>
       msgType match {
         case "key" => state.copy(keyMessage = None)
-        case "combo" => state.copy(comboMessage = None)
+        case "combo" =>
+          // Only hide the combo message if it's still active
+          state.comboMessage match {
+            case Some(msg) if System.currentTimeMillis() - msg.timestamp >= msg.duration =>
+              state.copy(comboMessage = None)
+            case _ => state
+          }
         case _ => state
       }
       
@@ -227,14 +246,21 @@ class MainApp(grammar: Grammar, initialAutomaton: Automaton) extends SimpleSwing
             val currentTime = System.currentTimeMillis()
             dispatch(KeyPressed(keyStr, action, currentTime))
             
+            // Timer for key message
             val keyTimer = new Timer(1500, _ => {
               dispatch(HideMessage("key", currentTime + 1500))
             })
             keyTimer.setRepeats(false)
             keyTimer.start()
 
+            // Timer for combo message
             val comboTimer = new Timer(3000, _ => {
-              dispatch(HideMessage("combo", currentTime + 10000))
+              // Verify if the combo message is still active
+              currentState.comboMessage.foreach { msg =>
+                if (System.currentTimeMillis() - msg.timestamp >= msg.duration) {
+                  dispatch(HideMessage("combo", currentTime + 3000))
+                }
+              }
             })
             comboTimer.setRepeats(false)
             comboTimer.start()
