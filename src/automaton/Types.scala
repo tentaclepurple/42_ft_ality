@@ -24,7 +24,6 @@ case class Automaton(
   initialState: State,
   currentState: State,
   history: List[Transition],
-  timeoutMillis: Long = 1000,
   debugState: DebugState = DebugState(false)
 ) {
   def transition(input: String, currentTime: Long): (Automaton, Option[String]) = {

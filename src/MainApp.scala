@@ -52,7 +52,7 @@ class MessageDisplay(fontSize: Int, isCombo: Boolean = false) extends Panel {
     try {
       val file = new java.io.File(path)
       if (!file.exists()) {
-        println(s"ADVERTENCIA: El archivo no existe: $path")
+        println(s"File not found: $path")
         return
       }
       
@@ -96,7 +96,7 @@ class MessageDisplay(fontSize: Int, isCombo: Boolean = false) extends Panel {
         g.setFont(new Font("Arial", Font.BOLD, fontSize))
         val metrics = g.getFontMetrics
         val x = (size.width - metrics.stringWidth(msg.text)) / 2
-        val y = (size.height * 3) / 4  // Texto en el tercio inferior
+        val y = (size.height * 3) / 4 
 
         g.setColor(new Color(0, 0, 0, 128))
         g.drawString(msg.text, x + 2, y + 2)
@@ -104,7 +104,7 @@ class MessageDisplay(fontSize: Int, isCombo: Boolean = false) extends Panel {
         g.setColor(Color.YELLOW)
         g.drawString(msg.text, x, y)
       } else {
-        // Para paneles normales, solo texto centrado
+        // For key messages, text is centered
         g.setFont(new Font("Arial", Font.BOLD, fontSize))
         val metrics = g.getFontMetrics
         val x = (size.width - metrics.stringWidth(msg.text)) / 2
@@ -234,7 +234,7 @@ class MainApp(grammar: Grammar, initialAutomaton: Automaton) extends SimpleSwing
             keyTimer.start()
 
             val comboTimer = new Timer(3000, _ => {
-              dispatch(HideMessage("combo", currentTime + 3000))
+              dispatch(HideMessage("combo", currentTime + 10000))
             })
             comboTimer.setRepeats(false)
             comboTimer.start()
