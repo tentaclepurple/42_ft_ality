@@ -6,6 +6,7 @@ import java.awt.{Color, Font, Graphics2D, RenderingHints, Image}
 import javax.swing.{Timer, ImageIcon}
 import grammar.Grammar
 import automaton.Automaton
+import javax.imageio.ImageIO
 
 case class Message(text: String, isVisible: Boolean, timestamp: Long, duration: Long, image: Option[String] = None)
 case class AppState(
@@ -87,9 +88,10 @@ class MessageDisplay(fontSize: Int, isCombo: Boolean = false) extends Panel {
       if (isCombo) {
         // Combo panels have an image and text 
         msg.image.flatMap(comboImages.get).foreach { img =>
-          val x = (size.width - img.getWidth(null)) / 2
-          val y = (size.height - img.getHeight(null)) / 3 
-          g.drawImage(img, x, y, null)
+          val icon = new ImageIcon(img)
+          val x = (size.width - icon.getIconWidth) / 2
+          val y = (size.height - icon.getIconHeight) / 3 
+          icon.paintIcon(peer, g, x, y)
         }
         
         // Text centered in the lower third
@@ -134,7 +136,7 @@ class MainApp(grammar: Grammar, initialAutomaton: Automaton) extends SimpleSwing
           case Some(existing) if currentTime - existing.timestamp < existing.duration =>
             existing
           case _ =>
-            Message(msg, true, currentTime, 3000, imagePath)
+            Message(msg, true, currentTime, getGifDuration(imagePath.getOrElse("")), imagePath)
         }
       }
       state.copy(
@@ -150,7 +152,7 @@ class MainApp(grammar: Grammar, initialAutomaton: Automaton) extends SimpleSwing
         case Some(existing) if currentTime - existing.timestamp < existing.duration =>
           state
         case _ =>
-          state.copy(comboMessage = Some(Message(combo, true, time, 3000, image)))
+          state.copy(comboMessage = Some(Message(combo, true, time, getGifDuration(image.getOrElse("")), image)))
       }
       
     case HideMessage(msgType, time) =>
@@ -185,13 +187,44 @@ class MainApp(grammar: Grammar, initialAutomaton: Automaton) extends SimpleSwing
   
   private val comboImages = Map(
     "RUNNING PUNCH" -> "images/Runningpunch.png",
-    "HADOUUUUKEN" -> "images/Hadouken.png",
-    "OSOTO MAWASHIGERI" -> "images/Osotomawashigeri.png",
-    "TATSUMAKI" -> "images/Tatsumaki.png",
-    "SHORYU" -> "images/Shoryu.png",
-    "SHORYUREPPA" -> "images/Shoryureppa.png",
+    "HADOUUUUKEN" -> "images/Hadouken.gif",
+    "OSOTO MAWASHIGERI" -> "images/Osoto.gif",
+    "TATSUMAKI" -> "images/Tatsumaki.gif",
+    "SHORYU" -> "images/Shoryu.gif",
+    "SHORYUREPPA" -> "images/Shoryureppa.gif",
   )
-  
+
+  def getGifDuration(path: String): Long = {
+    try {
+        val inputStream = ImageIO.createImageInputStream(new java.io.File(path))
+        val readers = ImageIO.getImageReadersByFormatName("gif")
+        if (readers.hasNext) {
+            val reader = readers.next()
+            reader.setInput(inputStream)
+            val numFrames = reader.getNumImages(true)
+            var duration = 0L
+
+            for (i <- 0 until numFrames) {
+                val imgMeta = reader.getImageMetadata(i)
+                val node = imgMeta.getAsTree("javax_imageio_gif_image_1.0")
+                val children = node.getChildNodes
+                for (j <- 0 until children.getLength) {
+                    val child = children.item(j)
+                    if (child.getNodeName == "GraphicControlExtension") {
+                        val delay = child.getAttributes.getNamedItem("delayTime").getNodeValue.toInt
+                        duration += delay * 5
+                    }
+                }
+            }
+            duration
+        } else {
+            3000L 
+        }
+    } catch {
+        case _: Exception => 3000L
+    }
+  }
+
   def top = new MainFrame {
     title = "Test Keyboard Events"
     preferredSize = new Dimension(800, 700)
