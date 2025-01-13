@@ -53,7 +53,6 @@ setup:
 	@mkdir -p $(TARGET_DIR)
 	@mkdir -p $(SRC_DIR)/grammar
 	@mkdir -p $(SRC_DIR)/automaton
-	@mkdir -p $(SRC_DIR)/game
 
 run: build
 	$(SCALA) -classpath $(CLASSPATH) $(MAIN_CLASS) blueprints/estrificher.gmr
