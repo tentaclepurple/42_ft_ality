@@ -1,5 +1,3 @@
-//src/MainApp.scala
-
 import scala.swing._
 import scala.swing.event._
 import java.awt.{Color, Font, Graphics2D, RenderingHints, Image}
@@ -52,7 +50,7 @@ class MessageDisplay(fontSize: Int, isCombo: Boolean = false) extends Panel {
     try {
       val file = new java.io.File(path)
       if (!file.exists()) {
-        println(s"ADVERTENCIA: El archivo no existe: $path")
+        println(s"File not found: $path")
         return
       }
       
@@ -96,7 +94,7 @@ class MessageDisplay(fontSize: Int, isCombo: Boolean = false) extends Panel {
         g.setFont(new Font("Arial", Font.BOLD, fontSize))
         val metrics = g.getFontMetrics
         val x = (size.width - metrics.stringWidth(msg.text)) / 2
-        val y = (size.height * 3) / 4  // Texto en el tercio inferior
+        val y = (size.height * 3) / 4 
 
         g.setColor(new Color(0, 0, 0, 128))
         g.drawString(msg.text, x + 2, y + 2)
@@ -104,7 +102,7 @@ class MessageDisplay(fontSize: Int, isCombo: Boolean = false) extends Panel {
         g.setColor(Color.YELLOW)
         g.drawString(msg.text, x, y)
       } else {
-        // Para paneles normales, solo texto centrado
+        // For key messages, text is centered
         g.setFont(new Font("Arial", Font.BOLD, fontSize))
         val metrics = g.getFontMetrics
         val x = (size.width - metrics.stringWidth(msg.text)) / 2
@@ -129,7 +127,13 @@ class MainApp(grammar: Grammar, initialAutomaton: Automaton) extends SimpleSwing
       val comboMessage = comboMsg.map { msg =>
         val comboName = msg.split("!")(1).trim
         val imagePath = comboImages.get(comboName)
-        Message(msg, true, currentTime, 3000, imagePath)
+        // Mantenemos el mensaje anterior si aún no ha expirado
+        state.comboMessage match {
+          case Some(existing) if currentTime - existing.timestamp < existing.duration =>
+            existing
+          case _ =>
+            Message(msg, true, currentTime, 3000, imagePath)
+        }
       }
       state.copy(
         automaton = newAutomaton,
@@ -138,12 +142,25 @@ class MainApp(grammar: Grammar, initialAutomaton: Automaton) extends SimpleSwing
       )
       
     case ShowCombo(combo, time, image) =>
-      state.copy(comboMessage = Some(Message(combo, true, time, 3000, image)))
+      val currentTime = System.currentTimeMillis()
+      // Solo actualizamos si no hay un mensaje activo o si el mensaje actual ha expirado
+      state.comboMessage match {
+        case Some(existing) if currentTime - existing.timestamp < existing.duration =>
+          state
+        case _ =>
+          state.copy(comboMessage = Some(Message(combo, true, time, 3000, image)))
+      }
       
-    case HideMessage(msgType, _) =>
+    case HideMessage(msgType, time) =>
       msgType match {
         case "key" => state.copy(keyMessage = None)
-        case "combo" => state.copy(comboMessage = None)
+        case "combo" =>
+          // Solo ocultamos el mensaje si realmente ha expirado
+          state.comboMessage match {
+            case Some(msg) if System.currentTimeMillis() - msg.timestamp >= msg.duration =>
+              state.copy(comboMessage = None)
+            case _ => state
+          }
         case _ => state
       }
       
@@ -227,14 +244,21 @@ class MainApp(grammar: Grammar, initialAutomaton: Automaton) extends SimpleSwing
             val currentTime = System.currentTimeMillis()
             dispatch(KeyPressed(keyStr, action, currentTime))
             
+            // Timer para mensaje de tecla
             val keyTimer = new Timer(1500, _ => {
               dispatch(HideMessage("key", currentTime + 1500))
             })
             keyTimer.setRepeats(false)
             keyTimer.start()
 
+            // Timer para mensaje de combo
             val comboTimer = new Timer(3000, _ => {
-              dispatch(HideMessage("combo", currentTime + 3000))
+              // Verificamos el tiempo actual vs el timestamp del mensaje
+              currentState.comboMessage.foreach { msg =>
+                if (System.currentTimeMillis() - msg.timestamp >= msg.duration) {
+                  dispatch(HideMessage("combo", currentTime + 3000))
+                }
+              }
             })
             comboTimer.setRepeats(false)
             comboTimer.start()
